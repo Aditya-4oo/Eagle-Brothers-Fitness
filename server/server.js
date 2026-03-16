@@ -11,7 +11,7 @@ const SECRET_KEY = process.env.JWT_SECRET || 'eagle_brothers_super_secret_key';
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increased limit for base64 image uploads
 
 // Database Setup
 const dbPath = path.resolve(__dirname, 'database.sqlite');
@@ -34,7 +34,21 @@ function initializeDatabase() {
       phone TEXT,
       password TEXT NOT NULL,
       role TEXT DEFAULT 'user',
+      avatar TEXT,
       registrationDate DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`, () => {
+       // Attempt to add avatar column if table already exists (will fail silently if it does)
+       db.run(`ALTER TABLE users ADD COLUMN avatar TEXT`, () => {});
+    });
+
+    // Reviews Table
+    db.run(`CREATE TABLE IF NOT EXISTS reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      userId INTEGER,
+      rating INTEGER,
+      comment TEXT,
+      date DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (userId) REFERENCES users(id)
     )`);
 
     // Events Table
@@ -179,9 +193,17 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 app.get('/api/auth/me', authenticateToken, (req, res) => {
-  db.get(`SELECT id, name, email, phone, role, registrationDate FROM users WHERE id = ?`, [req.user.id], (err, user) => {
+  db.get(`SELECT id, name, email, phone, role, avatar, registrationDate FROM users WHERE id = ?`, [req.user.id], (err, user) => {
     if (err || !user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
+  });
+});
+
+app.post('/api/users/avatar', authenticateToken, (req, res) => {
+  const { avatarBase64 } = req.body;
+  db.run(`UPDATE users SET avatar = ? WHERE id = ?`, [avatarBase64, req.user.id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: 'Avatar updated successfully', avatar: avatarBase64 });
   });
 });
 
@@ -318,6 +340,32 @@ app.get('/api/runs', authenticateToken, (req, res) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json(rows);
     });
+});
+
+// --- REVIEWS ROUTES ---
+app.get('/api/reviews', (req, res) => {
+  db.all(`
+    SELECT r.id, r.rating, r.comment as text, r.date, u.name, u.avatar 
+    FROM reviews r
+    JOIN users u ON r.userId = u.id
+    ORDER BY r.date DESC
+  `, [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+app.post('/api/reviews', authenticateToken, (req, res) => {
+  const { rating, comment } = req.body;
+  if (!rating || !comment) return res.status(400).json({ error: 'Rating and comment required' });
+  
+  db.run(`INSERT INTO reviews (userId, rating, comment) VALUES (?, ?, ?)`,
+    [req.user.id, rating, comment],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.status(201).json({ message: 'Review added', id: this.lastID });
+    }
+  );
 });
 
 // --- GLOBAL ERROR HANDLER ---

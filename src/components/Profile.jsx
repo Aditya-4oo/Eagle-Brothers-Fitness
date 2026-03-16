@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, Settings, Edit3, Award, Calendar, Activity, MapPin, ChevronRight, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -7,7 +7,9 @@ import './Profile.css';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [stats, setStats] = useState({
     events: 0,
@@ -61,6 +63,36 @@ const Profile = () => {
     navigate('/login');
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File is too large. Max size is 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        setIsUploading(true);
+        const base64String = reader.result;
+        await axios.post('/api/users/avatar', { avatarBase64: base64String });
+        setUser({ ...user, avatar: base64String });
+      } catch (err) {
+        console.error('Error uploading avatar', err);
+        alert('Failed to upload photo');
+      } finally {
+        setIsUploading(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   if (!user) return null;
 
   const joinMonthYear = new Date(user.registrationDate || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
@@ -71,10 +103,22 @@ const Profile = () => {
 
       <div className="profile-main-card card">
         <div className="profile-avatar-wrapper">
-          <img src="https://images.unsplash.com/photo-1542596594-649edbc13630?auto=format&fit=crop&q=80&w=200" alt="Profile" className="profile-avatar-img" />
-          <button className="edit-avatar-btn">
+          <img 
+            src={user.avatar || "https://images.unsplash.com/photo-1542596594-649edbc13630?auto=format&fit=crop&q=80&w=200"} 
+            alt="Profile" 
+            className="profile-avatar-img" 
+            style={{ opacity: isUploading ? 0.5 : 1 }}
+          />
+          <button className="edit-avatar-btn" onClick={handleAvatarClick} disabled={isUploading}>
             <Edit3 size={14} />
           </button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleAvatarChange} 
+            accept="image/*" 
+            style={{ display: 'none' }} 
+          />
         </div>
         
         <div className="profile-info-center">

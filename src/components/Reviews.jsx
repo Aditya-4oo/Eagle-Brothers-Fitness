@@ -1,47 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, MessageSquare } from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import './Reviews.css';
 
-const INITIAL_REVIEWS = [
-  { id: 1, name: 'Rahul Sharma', rating: 5, text: 'Amazing coaching staff! My son has improved his football skills significantly in just 3 months.', date: '2 days ago' },
-  { id: 2, name: 'Priya Patel', rating: 4, text: 'Great athletics facilities and supportive environment. The new track is excellent.', date: '1 week ago' },
-  { id: 3, name: 'Amit Kumar', rating: 5, text: 'Eagle Brothers is doing fantastic work for underprivileged youth. Highly recommend their programs.', date: '2 weeks ago' }
-];
-
 const Reviews = () => {
-  const [reviews, setReviews] = useState(INITIAL_REVIEWS);
+  const { user } = useAuth();
+  const [reviews, setReviews] = useState([]);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      const res = await axios.get('/api/reviews');
+      setReviews(res.data);
+    } catch (err) {
+      console.error('Failed to fetch reviews', err);
+    }
+  };
 
   // Calculate average rating
-  const avgRating = (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1);
+  const avgRating = reviews.length > 0 ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1) : "0.0";
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user) {
+      alert("Please log in to leave a review.");
+      return;
+    }
     if (rating === 0) {
       alert("Please select a star rating");
       return;
     }
 
-    const newReview = {
-      id: reviews.length + 1,
-      name: 'Current User', // In a real app, this comes from auth context
-      rating: rating,
-      text: comment,
-      date: 'Just now'
-    };
-
-    setReviews([newReview, ...reviews]);
-    setIsSubmitted(true);
-    
-    // Reset form
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setRating(0);
-      setComment('');
-    }, 3000);
+    try {
+      setIsSubmitting(true);
+      await axios.post('/api/reviews', { rating, comment });
+      
+      setIsSubmitted(true);
+      fetchReviews(); // Refresh the list
+      
+      // Reset form
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setRating(0);
+        setComment('');
+      }, 3000);
+    } catch (err) {
+      console.error("Error submitting review", err);
+      alert("Failed to post review");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -105,7 +122,9 @@ const Reviews = () => {
                 onChange={(e) => setComment(e.target.value)}
                 required
               />
-              <button type="submit" className="btn-primary w-full">Submit Feedback</button>
+              <button type="submit" className="btn-primary w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Posting...' : 'Submit Feedback'}
+              </button>
             </form>
           </>
         )}
@@ -123,11 +142,15 @@ const Reviews = () => {
             <div className="review-header">
               <div className="reviewer-info">
                 <div className="reviewer-avatar">
-                  {review.name.charAt(0)}
+                  {review.avatar ? (
+                     <img src={review.avatar} alt={review.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                  ) : (
+                     <span style={{color: 'black'}}>{review.name.charAt(0)}</span>
+                  )}
                 </div>
                 <div>
                   <h4 className="reviewer-name">{review.name}</h4>
-                  <span className="review-date">{review.date}</span>
+                  <span className="review-date">{new Date(review.date).toLocaleDateString()}</span>
                 </div>
               </div>
               <div className="review-stars flex">
