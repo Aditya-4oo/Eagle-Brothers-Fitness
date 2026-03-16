@@ -313,6 +313,16 @@ app.get('/api/runs', authenticateToken, (req, res) => {
     });
 });
 
+// --- GLOBAL ERROR HANDLER ---
+app.use((err, req, res, next) => {
+  console.error('Unhandled Error:', err);
+  res.status(500).json({ 
+    error: err.message, 
+    code: err.code,
+    stack: err.stack 
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
