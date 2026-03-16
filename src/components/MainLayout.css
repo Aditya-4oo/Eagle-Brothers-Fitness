@@ -1,0 +1,114 @@
+.main-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-color);
+}
+
+.main-header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  background-color: var(--surface-color);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+[data-theme='dark'] .main-header {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.header-logo {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--royal-blue);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+[data-theme='dark'] .header-logo {
+  color: var(--golden-yellow);
+}
+
+.logout-btn {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+}
+
+.logout-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error-color);
+}
+
+.content-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 2rem; /* Buffer above nav bar */
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  height: var(--bottom-nav-height);
+  background-color: var(--surface-color);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+  padding-bottom: env(safe-area-inset-bottom); /* iOS support */
+}
+
+[data-theme='dark'] .bottom-nav {
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  text-decoration: none;
+  width: 25%;
+  height: 100%;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: color var(--transition-speed) ease;
+  position: relative;
+}
+
+.nav-icon {
+  margin-bottom: 4px;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.nav-item:active .nav-icon {
+  transform: scale(0.9);
+}
+
+.nav-active {
+  color: var(--royal-blue);
+}
+
+[data-theme='dark'] .nav-active {
+  color: var(--golden-yellow);
+}
+
+.nav-active .nav-icon {
+  transform: translateY(-2px);
+  filter: drop-shadow(0px 2px 4px rgba(10, 31, 68, 0.3));
+}
+
+[data-theme='dark'] .nav-active .nav-icon {
+  filter: drop-shadow(0px 2px 4px rgba(255, 215, 0, 0.4));
+}

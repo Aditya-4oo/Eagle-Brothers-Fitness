@@ -1,0 +1,98 @@
+.donations-container {
+  padding: 1.5rem 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.bounce-animation {
+  animation: bounce-heart 2s infinite ease-in-out;
+}
+
+@keyframes bounce-heart {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.4)); }
+}
+
+.amount-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.amount-btn {
+  background-color: var(--bg-color);
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.amount-btn:hover {
+  border-color: var(--golden-yellow);
+}
+
+.amount-btn.active {
+  background-color: rgba(255, 215, 0, 0.1);
+  border-color: var(--golden-yellow);
+  color: var(--golden-yellow);
+}
+
+[data-theme='light'] .amount-btn.active {
+  background-color: var(--royal-blue);
+  border-color: var(--royal-blue);
+  color: white;
+}
+
+.amount-input {
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 1rem;
+}
+
+.secure-payment-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  background-color: rgba(16, 185, 129, 0.1);
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+.btn-donate {
+  background-color: #EF4444; /* Give donate button a distinct action color */
+  padding: 1.25rem;
+  font-size: 1.1rem;
+}
+
+[data-theme='dark'] .btn-donate {
+  background-color: #EF4444; /* Override dark mode yellow */
+  color: white;
+}
+
+.btn-donate:hover {
+  background-color: #DC2626;
+}
+
+.btn-donate.processing {
+  background-color: var(--text-secondary);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.donation-success-card {
+  padding: 3rem 1.5rem;
+}
+
+/* Utils */
+.block { display: block; }
