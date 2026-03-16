@@ -15,6 +15,7 @@ const BMI = () => {
       const hMeters = Number(height) / 100;
       const calcBmi = (Number(weight) / (hMeters * hMeters)).toFixed(1);
       setBmi(calcBmi);
+      localStorage.setItem('user_bmi', calcBmi);
 
       // Determine Category
       if (calcBmi < 18.5) {

@@ -236,6 +236,13 @@ app.post('/api/registrations/event', authenticateToken, (req, res) => {
   );
 });
 
+app.get('/api/registrations/my-events', authenticateToken, (req, res) => {
+  db.all(`SELECT * FROM event_registrations WHERE userId = ? ORDER BY registrationDate DESC`, [req.user.id], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
 app.get('/api/admin/registrations/event', authenticateToken, requireAdmin, (req, res) => {
     db.all(`
         SELECT er.*, e.title as eventTitle, u.name as registeredByUser 
