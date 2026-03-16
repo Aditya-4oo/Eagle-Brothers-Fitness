@@ -7,6 +7,7 @@
     "start": "node server/server.js",
     "dev": "vite",
     "build": "vite build",
+    "render-build": "npm install && npm rebuild sqlite3 --build-from-source",
     "preview": "vite preview"
   },
   "dependencies": {
