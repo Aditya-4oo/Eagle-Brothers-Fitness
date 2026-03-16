@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://eagle-brothers-fitness-6fc9.vercel.app/sitemap.xml
